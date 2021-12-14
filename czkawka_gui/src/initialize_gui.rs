@@ -6,8 +6,9 @@ use std::path::Path;
 use std::rc::Rc;
 
 use directories_next::ProjectDirs;
-use gtk::prelude::*;
-use gtk::{CheckButton, EventControllerKey, Image, SelectionMode, TextView, TreeView};
+use gtk4::prelude::*;
+use gtk4::Inhibit;
+use gtk4::{CheckButton, EventControllerKey, Image, SelectionMode, TextView, TreeView};
 use image::imageops::FilterType;
 use image::GenericImageView;
 
@@ -141,18 +142,18 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     glib::types::Type::STRING, // Color
                     glib::types::Type::STRING, // TextColor
                 ];
-                let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+                let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-                let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+                let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
                 tree_view.selection().set_mode(SelectionMode::Multiple);
-                tree_view.selection().set_select_function(Some(Box::new(select_function_duplicates)));
+                tree_view.selection().set_select_function(select_function_duplicates);
 
                 create_tree_view_duplicates(&mut tree_view);
 
                 {
                     // EVK
-                    let evk = EventControllerKey::new(&tree_view);
+                    let evk = EventControllerKey::new();
                     evk.connect_key_pressed(opening_enter_function_ported);
                     gui_data.main_notebook.evk_tree_view_duplicate_finder = evk;
                 }
@@ -163,27 +164,27 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     let image_preview_duplicates = gui_data.main_notebook.image_preview_duplicates.clone();
                     let preview_path = gui_data.preview_path.clone();
 
-                    tree_view.connect_button_press_event(opening_double_click_function);
-                    tree_view.connect_button_release_event(move |tree_view, _event| {
-                        let nb_object = &NOTEBOOKS_INFOS[NotebookMainEnum::Duplicate as usize];
-                        let preview_path = preview_path.clone();
-                        show_preview(
-                            tree_view,
-                            &text_view_errors,
-                            &check_button_settings_show_preview_duplicates,
-                            &image_preview_duplicates,
-                            preview_path,
-                            nb_object.column_path,
-                            nb_object.column_name,
-                        );
-
-                        gtk::Inhibit(false)
-                    });
+                    //tree_view.connect_button_press_event(opening_double_click_function);
+                    // tree_view.connect_button_release_event(move |tree_view, _event| {
+                    //     let nb_object = &NOTEBOOKS_INFOS[NotebookMainEnum::Duplicate as usize];
+                    //     let preview_path = preview_path.clone();
+                    //     show_preview(
+                    //         tree_view,
+                    //         &text_view_errors,
+                    //         &check_button_settings_show_preview_duplicates,
+                    //         &image_preview_duplicates,
+                    //         preview_path,
+                    //         nb_object.column_path,
+                    //         nb_object.column_name,
+                    //     );
+                    //
+                    //     gtk4::Inhibit(false)
+                    // });
                 }
                 tree_view.set_widget_name("tree_view_duplicate_finder");
                 gui_data.main_notebook.tree_view_duplicate_finder = tree_view.clone();
-                scrolled_window_duplicate_finder.add(&tree_view);
-                scrolled_window_duplicate_finder.show_all();
+                scrolled_window_duplicate_finder.set_child(Some(&tree_view));
+                scrolled_window_duplicate_finder.show();
             }
             // Empty Folders
             {
@@ -194,25 +195,25 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     glib::types::Type::STRING, // Modification
                     glib::types::Type::U64,    // ModificationAsSecs
                 ];
-                let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+                let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-                let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+                let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
                 tree_view.selection().set_mode(SelectionMode::Multiple);
 
                 create_tree_view_empty_folders(&mut tree_view);
 
-                let evk = EventControllerKey::new(&tree_view);
+                let evk = EventControllerKey::new();
                 evk.connect_key_pressed(opening_enter_function_ported);
 
                 gui_data.main_notebook.evk_tree_view_empty_folder_finder = evk;
 
-                tree_view.connect_button_press_event(opening_double_click_function);
+                //tree_view.connect_button_press_event(opening_double_click_function);
 
                 tree_view.set_widget_name("tree_view_empty_folder_finder");
                 gui_data.main_notebook.tree_view_empty_folder_finder = tree_view.clone();
-                scrolled_window_empty_folder_finder.add(&tree_view);
-                scrolled_window_empty_folder_finder.show_all();
+                scrolled_window_empty_folder_finder.set_child(Some(&tree_view));
+                scrolled_window_empty_folder_finder.show();
             }
             // Empty Files
             {
@@ -223,24 +224,24 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     glib::types::Type::STRING, // Modification
                     glib::types::Type::U64,    // ModificationAsSecs
                 ];
-                let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+                let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-                let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+                let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
                 tree_view.selection().set_mode(SelectionMode::Multiple);
 
                 create_tree_view_empty_files(&mut tree_view);
 
-                let evk = EventControllerKey::new(&tree_view);
+                let evk = EventControllerKey::new();
                 evk.connect_key_pressed(opening_enter_function_ported);
                 gui_data.main_notebook.evk_tree_view_empty_files_finder = evk;
 
-                tree_view.connect_button_press_event(opening_double_click_function);
+                //tree_view.connect_button_press_event(opening_double_click_function);
 
                 tree_view.set_widget_name("tree_view_empty_files_finder");
                 gui_data.main_notebook.tree_view_empty_files_finder = tree_view.clone();
-                scrolled_window_empty_files_finder.add(&tree_view);
-                scrolled_window_empty_files_finder.show_all();
+                scrolled_window_empty_files_finder.set_child(Some(&tree_view));
+                scrolled_window_empty_files_finder.show();
             }
             // Temporary Files
             {
@@ -251,24 +252,24 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     glib::types::Type::STRING, // Modification
                     glib::types::Type::U64,    // ModificationAsSecs
                 ];
-                let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+                let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-                let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+                let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
                 tree_view.selection().set_mode(SelectionMode::Multiple);
 
                 create_tree_view_temporary_files(&mut tree_view);
 
-                let evk = EventControllerKey::new(&tree_view);
+                let evk = EventControllerKey::new();
                 evk.connect_key_pressed(opening_enter_function_ported);
                 gui_data.main_notebook.evk_tree_view_temporary_files_finder = evk;
 
-                tree_view.connect_button_press_event(opening_double_click_function);
+                //tree_view.connect_button_press_event(opening_double_click_function);
 
                 tree_view.set_widget_name("tree_view_temporary_files_finder");
                 gui_data.main_notebook.tree_view_temporary_files_finder = tree_view.clone();
-                scrolled_window_temporary_files_finder.add(&tree_view);
-                scrolled_window_temporary_files_finder.show_all();
+                scrolled_window_temporary_files_finder.set_child(Some(&tree_view));
+                scrolled_window_temporary_files_finder.show();
             }
             // Big Files
             {
@@ -281,24 +282,24 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     glib::types::Type::U64,    // SizeAsBytes
                     glib::types::Type::U64,    // ModificationAsSecs
                 ];
-                let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+                let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-                let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+                let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
                 tree_view.selection().set_mode(SelectionMode::Multiple);
 
                 create_tree_view_big_files(&mut tree_view);
 
-                let evk = EventControllerKey::new(&tree_view);
+                let evk = EventControllerKey::new();
                 evk.connect_key_pressed(opening_enter_function_ported);
                 gui_data.main_notebook.evk_tree_view_big_files_finder = evk;
 
-                tree_view.connect_button_press_event(opening_double_click_function);
+                //tree_view.connect_button_press_event(opening_double_click_function);
 
                 tree_view.set_widget_name("tree_view_big_files_finder");
                 gui_data.main_notebook.tree_view_big_files_finder = tree_view.clone();
-                scrolled_window_big_files_finder.add(&tree_view);
-                scrolled_window_big_files_finder.show_all();
+                scrolled_window_big_files_finder.set_child(Some(&tree_view));
+                scrolled_window_big_files_finder.show();
             }
             // Similar Images
             {
@@ -319,18 +320,18 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     glib::types::Type::STRING, // Color
                     glib::types::Type::STRING, // TextColor
                 ];
-                let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+                let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-                let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+                let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
                 tree_view.selection().set_mode(SelectionMode::Multiple);
-                tree_view.selection().set_select_function(Some(Box::new(select_function_similar_images)));
+                tree_view.selection().set_select_function(select_function_similar_images);
 
                 create_tree_view_similar_images(&mut tree_view);
 
                 {
                     // EVK
-                    let evk = EventControllerKey::new(&tree_view);
+                    let evk = EventControllerKey::new();
                     evk.connect_key_pressed(opening_enter_function_ported);
                     gui_data.main_notebook.evk_tree_view_similar_images_finder = evk;
                 }
@@ -339,28 +340,28 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     let check_button_settings_show_preview_similar_images = gui_data.settings.check_button_settings_show_preview_similar_images.clone();
                     let preview_path = gui_data.preview_path.clone();
 
-                    tree_view.connect_button_press_event(opening_double_click_function);
+                    //tree_view.connect_button_press_event(opening_double_click_function);
                     let text_view_errors = gui_data.text_view_errors.clone();
-                    tree_view.connect_button_release_event(move |tree_view, _event| {
-                        let nb_object = &NOTEBOOKS_INFOS[NotebookMainEnum::SimilarImages as usize];
-                        let preview_path = preview_path.clone();
-                        show_preview(
-                            tree_view,
-                            &text_view_errors,
-                            &check_button_settings_show_preview_similar_images,
-                            &image_preview_similar_images,
-                            preview_path,
-                            nb_object.column_path,
-                            nb_object.column_name,
-                        );
-                        gtk::Inhibit(false)
-                    });
+                    // tree_view.connect_button_release_event(move |tree_view, _event| {
+                    //     let nb_object = &NOTEBOOKS_INFOS[NotebookMainEnum::SimilarImages as usize];
+                    //     let preview_path = preview_path.clone();
+                    //     show_preview(
+                    //         tree_view,
+                    //         &text_view_errors,
+                    //         &check_button_settings_show_preview_similar_images,
+                    //         &image_preview_similar_images,
+                    //         preview_path,
+                    //         nb_object.column_path,
+                    //         nb_object.column_name,
+                    //     );
+                    //     gtk4::Inhibit(false)
+                    // });
                 }
 
                 tree_view.set_widget_name("tree_view_similar_images_finder");
                 gui_data.main_notebook.tree_view_similar_images_finder = tree_view.clone();
-                scrolled_window_similar_images_finder.add(&tree_view);
-                scrolled_window_similar_images_finder.show_all();
+                scrolled_window_similar_images_finder.set_child(Some(&tree_view));
+                scrolled_window_similar_images_finder.show();
             }
             // Similar Videos
             {
@@ -376,25 +377,25 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     glib::types::Type::STRING, // Color
                     glib::types::Type::STRING, // TextColor
                 ];
-                let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+                let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-                let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+                let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
                 tree_view.selection().set_mode(SelectionMode::Multiple);
-                tree_view.selection().set_select_function(Some(Box::new(select_function_similar_videos)));
+                tree_view.selection().set_select_function(select_function_similar_videos);
 
                 create_tree_view_similar_videos(&mut tree_view);
 
-                let evk = EventControllerKey::new(&tree_view);
+                let evk = EventControllerKey::new();
                 evk.connect_key_pressed(opening_enter_function_ported);
                 gui_data.main_notebook.evk_tree_view_similar_videos_finder = evk;
 
-                tree_view.connect_button_press_event(opening_double_click_function);
+                //tree_view.connect_button_press_event(opening_double_click_function);
 
                 tree_view.set_widget_name("tree_view_similar_videos_finder");
                 gui_data.main_notebook.tree_view_similar_videos_finder = tree_view.clone();
-                scrolled_window_similar_videos_finder.add(&tree_view);
-                scrolled_window_similar_videos_finder.show_all();
+                scrolled_window_similar_videos_finder.set_child(Some(&tree_view));
+                scrolled_window_similar_videos_finder.show();
             }
             // Same Music
             {
@@ -415,25 +416,25 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     glib::types::Type::STRING, // Color
                     glib::types::Type::STRING, // TextColor
                 ];
-                let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+                let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-                let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+                let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
                 tree_view.selection().set_mode(SelectionMode::Multiple);
-                tree_view.selection().set_select_function(Some(Box::new(select_function_same_music)));
+                tree_view.selection().set_select_function(select_function_same_music);
 
                 create_tree_view_same_music(&mut tree_view);
 
-                let evk = EventControllerKey::new(&tree_view);
+                let evk = EventControllerKey::new();
                 evk.connect_key_pressed(opening_enter_function_ported);
                 gui_data.main_notebook.evk_tree_view_same_music_finder = evk;
 
-                tree_view.connect_button_press_event(opening_double_click_function);
+                //tree_view.connect_button_press_event(opening_double_click_function);
 
                 tree_view.set_widget_name("tree_view_same_music_finder");
                 gui_data.main_notebook.tree_view_same_music_finder = tree_view.clone();
-                scrolled_window_same_music_finder.add(&tree_view);
-                scrolled_window_same_music_finder.show_all();
+                scrolled_window_same_music_finder.set_child(Some(&tree_view));
+                scrolled_window_same_music_finder.show();
             }
             // Invalid Symlinks
             {
@@ -446,24 +447,24 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     glib::types::Type::STRING, // Modification
                     glib::types::Type::U64,    // ModificationAsSecs
                 ];
-                let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+                let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-                let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+                let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
                 tree_view.selection().set_mode(SelectionMode::Multiple);
 
                 create_tree_view_invalid_symlinks(&mut tree_view);
 
-                let evk = EventControllerKey::new(&tree_view);
+                let evk = EventControllerKey::new();
                 evk.connect_key_pressed(opening_enter_function_ported);
                 gui_data.main_notebook.evk_tree_view_invalid_symlinks = evk;
 
-                tree_view.connect_button_press_event(opening_double_click_function);
+                //tree_view.connect_button_press_event(opening_double_click_function);
 
                 tree_view.set_widget_name("tree_view_invalid_symlinks");
                 gui_data.main_notebook.tree_view_invalid_symlinks = tree_view.clone();
-                scrolled_window_invalid_symlinks.add(&tree_view);
-                scrolled_window_invalid_symlinks.show_all();
+                scrolled_window_invalid_symlinks.set_child(Some(&tree_view));
+                scrolled_window_invalid_symlinks.show();
             }
             // Broken Files
             {
@@ -475,24 +476,24 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
                     glib::types::Type::STRING, // Modification
                     glib::types::Type::U64,    // ModificationAsSecs
                 ];
-                let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+                let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-                let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+                let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
                 tree_view.selection().set_mode(SelectionMode::Multiple);
 
                 create_tree_view_broken_files(&mut tree_view);
 
-                let evk = EventControllerKey::new(&tree_view);
+                let evk = EventControllerKey::new();
                 evk.connect_key_pressed(opening_enter_function_ported);
                 gui_data.main_notebook.evk_tree_view_broken_files = evk;
 
-                tree_view.connect_button_press_event(opening_double_click_function);
+                //tree_view.connect_button_press_event(opening_double_click_function);
 
                 tree_view.set_widget_name("tree_view_broken_files");
                 gui_data.main_notebook.tree_view_broken_files = tree_view.clone();
-                scrolled_window_broken_files.add(&tree_view);
-                scrolled_window_broken_files.show_all();
+                scrolled_window_broken_files.set_child(Some(&tree_view));
+                scrolled_window_broken_files.show();
             }
         }
     }
@@ -505,19 +506,19 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
         // Set Included Directory
         {
             let col_types: [glib::types::Type; 1] = [glib::types::Type::STRING];
-            let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+            let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-            let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+            let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
             tree_view.selection().set_mode(SelectionMode::Multiple);
 
             create_tree_view_directories(&mut tree_view);
 
             gui_data.upper_notebook.tree_view_included_directories = tree_view.clone();
-            scrolled_window_included_directories.add(&tree_view);
-            scrolled_window_included_directories.show_all();
+            scrolled_window_included_directories.set_child(Some(&tree_view));
+            scrolled_window_included_directories.show();
 
-            let evk = EventControllerKey::new(&tree_view);
+            let evk = EventControllerKey::new();
             gui_data.upper_notebook.evk_tree_view_included_directories = evk;
             gui_data.upper_notebook.evk_tree_view_included_directories.connect_key_released(move |_event_controller_key, _key_value, key_code, _modifier_type| {
                 if key_code == KEY_DELETE {
@@ -535,19 +536,19 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
         // Set Excluded Directory
         {
             let col_types: [glib::types::Type; 1] = [glib::types::Type::STRING];
-            let list_store: gtk::ListStore = gtk::ListStore::new(&col_types);
+            let list_store: gtk4::ListStore = gtk4::ListStore::new(&col_types);
 
-            let mut tree_view: gtk::TreeView = TreeView::with_model(&list_store);
+            let mut tree_view: gtk4::TreeView = TreeView::with_model(&list_store);
 
             tree_view.selection().set_mode(SelectionMode::Multiple);
 
             create_tree_view_directories(&mut tree_view);
 
             gui_data.upper_notebook.tree_view_excluded_directories = tree_view.clone();
-            scrolled_window_excluded_directories.add(&tree_view);
-            scrolled_window_excluded_directories.show_all();
+            scrolled_window_excluded_directories.set_child(Some(&tree_view));
+            scrolled_window_excluded_directories.show();
 
-            let evk = EventControllerKey::new(&tree_view);
+            let evk = EventControllerKey::new();
             gui_data.upper_notebook.evk_tree_view_excluded_directories = evk;
             gui_data.upper_notebook.evk_tree_view_excluded_directories.connect_key_released(move |_event_controller_key, _key_value, key_code, _modifier_type| {
                 if key_code == KEY_DELETE {
@@ -569,9 +570,9 @@ pub fn initialize_gui(gui_data: &mut GuiData) {
         let window_progress = gui_data.progress_window.window_progress.clone();
         let stop_sender = gui_data.stop_sender.clone();
 
-        window_progress.connect_delete_event(move |_, _| {
+        window_progress.connect_close_request(move |_| {
             stop_sender.send(()).unwrap();
-            gtk::Inhibit(true)
+            gtk4::Inhibit(true)
         });
     }
 
@@ -595,7 +596,7 @@ fn connect_event_buttons(gui_data: &GuiData) {
             let preview_path = preview_path.clone();
             let nb_object = &NOTEBOOKS_INFOS[NotebookMainEnum::Duplicate as usize];
             show_preview(
-                &event_controller_key.widget().unwrap().downcast::<gtk::TreeView>().unwrap(),
+                &event_controller_key.widget().unwrap().downcast::<gtk4::TreeView>().unwrap(),
                 &text_view_errors,
                 &check_button_settings_show_preview_duplicates,
                 &image_preview_duplicates,
@@ -656,7 +657,7 @@ fn connect_event_buttons(gui_data: &GuiData) {
             let preview_path = preview_path.clone();
             let nb_object = &NOTEBOOKS_INFOS[NotebookMainEnum::SimilarImages as usize];
             show_preview(
-                &event_controller_key.widget().unwrap().downcast::<gtk::TreeView>().unwrap(),
+                &event_controller_key.widget().unwrap().downcast::<gtk4::TreeView>().unwrap(),
                 &text_view_errors,
                 &check_button_settings_show_preview_similar_images,
                 &image_preview_similar_images,
@@ -727,8 +728,8 @@ fn show_preview(tree_view: &TreeView, text_view_errors: &TextView, check_button_
                     add_text_to_text_view(text_view_errors, format!("Failed to create dir {} needed by image preview, reason {}", cache_dir.display(), e).as_str());
                     break 'dir;
                 }
-                let path = tree_model.value(&tree_model.iter(&tree_path).unwrap(), column_path).get::<String>().unwrap();
-                let name = tree_model.value(&tree_model.iter(&tree_path).unwrap(), column_name).get::<String>().unwrap();
+                let path = tree_model.get(&tree_model.iter(&tree_path).unwrap(), column_path).get::<String>().unwrap();
+                let name = tree_model.get(&tree_model.iter(&tree_path).unwrap(), column_name).get::<String>().unwrap();
 
                 let file_name = format!("{}/{}", path, name);
                 let file_name = file_name.as_str();
